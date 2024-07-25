@@ -91,10 +91,10 @@ function gameController() {
         
         if (gotWinner(row, column)) {
             console.log(`Winner is ${activePlayer.name} (${activePlayer.token}).`);
-            return;
+            return `Winner is ${activePlayer.name} (${activePlayer.token}).`;
         } else if (!availableSpacesLeft()) {
             console.log('Drawwwww!');
-            return;
+            return 'Drawwwww!';
         } else {
             switchPlayer();
             printNewRound();
@@ -174,10 +174,9 @@ function gameController() {
         reset,
         getActivePlayer,
         playRound,
+        board: board.getBoard(),
     }
 }
-
-let controller = gameController();
 
 // draw
 // controller.playRound(0, 0);
@@ -213,11 +212,78 @@ let controller = gameController();
 // controller.playRound(2, 2);
 
 // diagnal (/)
-controller.playRound(1, 0);
-controller.playRound(0, 2);
-controller.playRound(1, 2);
-controller.playRound(1, 1);
-controller.playRound(0, 1);
-controller.playRound(2, 0);
+// controller.playRound(1, 0);
+// controller.playRound(0, 2);
+// controller.playRound(1, 2);
+// controller.playRound(1, 1);
+// controller.playRound(0, 1);
+// controller.playRound(2, 0);
 
 //controller.reset();
+
+function ScreenController() {
+    const containerDiv = document.querySelector('.container');
+    const playerDiv = document.querySelector('.player');
+    const resetButton = document.querySelector('.reset');
+
+    let controller = gameController();
+
+    const updateBoard = () => {
+        updatePlayerInfo();
+
+        for (let i = 0; i < BOARD_ROW; i++) {
+            for (let j = 0; j < BOARD_COLUMN; j++) {
+                let cellButton = document.createElement('button');
+                cellButton.dataset.row = i;
+                cellButton.dataset.column = j;
+                cellButton.classList.add('cell');
+                cellButton.textContent = controller.board[i][j];
+
+                cellButton.addEventListener('click', putToken);
+
+                containerDiv.appendChild(cellButton);
+            }
+        }
+    }
+
+    const updatePlayerInfo = () => {
+        playerDiv.textContent = '';
+        playerDiv.appendChild(document.createTextNode(`${controller.getActivePlayer().name}'s (${controller.getActivePlayer().token}) turn.`));
+    }
+
+    const removeCellEventListener = () => {
+        const cells = document.querySelectorAll('.cell');
+        cells.forEach(x => x.removeCellEventListener('click', putToken));
+    }
+
+    const toggleResetButton = () => {
+        resetButton.style.display = resetButton.style.display === 'block' 
+                                  ? 'none'
+                                  : 'block';
+    }
+
+    const putToken = (e) => {
+        containerDiv.textContent = '';
+        const rowIndex = e.target.dataset.row;
+        const columnIndex = e.target.dataset.column;
+
+        let message = controller.playRound(rowIndex, columnIndex);
+        updateBoard();
+        
+        if (message !== undefined) {
+            playerDiv.textContent = message;
+            removeCellEventListener();
+            toggleResetButton();
+        }
+    }
+
+    resetButton.addEventListener('click', () => {
+        controller.reset();
+        updateBoard();
+        toggleResetButton();
+    });
+    
+    updateBoard();
+}
+
+ScreenController();
