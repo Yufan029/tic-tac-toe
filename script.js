@@ -229,6 +229,8 @@ function ScreenController() {
     let controller = gameController();
 
     const updateBoard = () => {
+        playerDiv.textContent = '';
+        containerDiv.textContent = '';
         updatePlayerInfo();
 
         for (let i = 0; i < BOARD_ROW; i++) {
@@ -247,7 +249,6 @@ function ScreenController() {
     }
 
     const updatePlayerInfo = () => {
-        playerDiv.textContent = '';
         playerDiv.appendChild(document.createTextNode(`${controller.getActivePlayer().name}'s (${controller.getActivePlayer().token}) turn.`));
     }
 
@@ -263,13 +264,12 @@ function ScreenController() {
     }
 
     const putToken = (e) => {
-        containerDiv.textContent = '';
         const rowIndex = e.target.dataset.row;
         const columnIndex = e.target.dataset.column;
 
         let message = controller.playRound(rowIndex, columnIndex);
         updateBoard();
-        
+
         if (message !== undefined) {
             playerDiv.textContent = message;
             removeCellEventListener();
@@ -280,7 +280,6 @@ function ScreenController() {
     resetButton.addEventListener('click', () => {
         controller.reset();
         updateBoard();
-        toggleResetButton();
     });
     
     updateBoard();
