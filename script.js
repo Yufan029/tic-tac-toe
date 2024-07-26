@@ -5,10 +5,7 @@ const BOARD_COLUMN = 3;
 function Cell() {
     let token = defaultToken;
 
-    const setToken = function(newToken) {
-        token = newToken;
-    }
-
+    const setToken = (newToken) => token = newToken;
     const getToken = () => token;
 
     return {
@@ -33,7 +30,6 @@ function gameBoardFactory() {
         }
 
         board[row][column] = token;
-
         return true;
     };
 
@@ -57,24 +53,27 @@ function gameBoardFactory() {
 }
 
 function gameController() {
-    const player = [
+    const players = [
         {
-            name: 'player 1',
+            name: 'Player 1',
             token: 'X',
         },
         {
-            name: 'player 2',
+            name: 'Player 2',
             token: 'O',
         }
     ]
 
     const board = gameBoardFactory();
     const boardContent = board.getBoard();
-    let activePlayer = player[0];
+    let activePlayer = players[0];
+
+    const setPlayer1Name = (name) => players[0].name = name;
+    const setPlayer2Name = (name) => players[1].name = name;
 
     const getActivePlayer = () => activePlayer;
     const switchPlayer = function () {
-        activePlayer = activePlayer == player[0] ? player[1] : player[0];
+        activePlayer = activePlayer == players[0] ? players[1] : players[0];
     }
 
     const printNewRound = () => {
@@ -126,24 +125,24 @@ function gameController() {
             }
         }
 
-        // Diagnal (\) win.
+        // diagonal (\) win.
         for (let i = 0; i < BOARD_ROW; i++) {
             if (boardContent[i][i] !== activePlayer.token) {
                 break;
             }
 
             if (i === BOARD_ROW - 1) {
-                console.log(`${activePlayer.name} (${activePlayer.token}) win, at diagnal (\\).`);
+                console.log(`${activePlayer.name} (${activePlayer.token}) win, at diagonal (\\).`);
                 return true;
             }
         }
 
-        // Diagnal (/) win.
+        // diagonal (/) win.
         if (activePlayer.token === boardContent[0][2] &&
             activePlayer.token === boardContent[1][1] &&
             activePlayer.token === boardContent[2][0]) {
                 
-            console.log(`${activePlayer.name} win, at diagnal (/).`);
+            console.log(`${activePlayer.name} win, at diagonal (/).`);
             return true;
         }
 
@@ -164,7 +163,7 @@ function gameController() {
 
     const reset = () => {
         board.init();
-        activePlayer = player[0];
+        activePlayer = players[0];
         printNewRound();
     }
 
@@ -174,6 +173,8 @@ function gameController() {
         reset,
         getActivePlayer,
         playRound,
+        setPlayer1Name,
+        setPlayer2Name,
         board: board.getBoard(),
     }
 }
@@ -204,14 +205,14 @@ function gameController() {
 // controller.playRound(0, 2);
 // console.log('=============================');
 
-// diagnal (\)
+// diagonal (\)
 // controller.playRound(1, 1);
 // controller.playRound(0, 1);
 // controller.playRound(0, 0);
 // controller.playRound(2, 1);
 // controller.playRound(2, 2);
 
-// diagnal (/)
+// diagonal (/)
 // controller.playRound(1, 0);
 // controller.playRound(0, 2);
 // controller.playRound(1, 2);
@@ -223,13 +224,18 @@ function gameController() {
 
 function ScreenController() {
     const containerDiv = document.querySelector('.container');
-    const playerDiv = document.querySelector('.player');
+    const infoDiv = document.querySelector('.info');
     const resetButton = document.querySelector('.reset');
+    const namesButton = document.querySelector('.enter-names');
+    const dialog = document.querySelector('dialog');
+    const submitButton = document.querySelector('#submit');
+    const cancelButton = document.querySelector('#cancel');
+    const player1Name = document.querySelector('#player1');
+    const player2Name = document.querySelector('#player2');
 
     let controller = gameController();
 
     const updateBoard = () => {
-        playerDiv.textContent = '';
         containerDiv.textContent = '';
         updatePlayerInfo();
 
@@ -240,30 +246,19 @@ function ScreenController() {
                 cellButton.dataset.column = j;
                 cellButton.classList.add('cell');
                 cellButton.textContent = controller.board[i][j];
-
-                cellButton.addEventListener('click', putToken);
-
                 containerDiv.appendChild(cellButton);
             }
         }
+
+        // Add the event handler for the entire container div.
+        containerDiv.addEventListener('click', placeToken);
     }
 
     const updatePlayerInfo = () => {
-        playerDiv.appendChild(document.createTextNode(`${controller.getActivePlayer().name}'s (${controller.getActivePlayer().token}) turn.`));
+        infoDiv.textContent = `${controller.getActivePlayer().name}'s (${controller.getActivePlayer().token}) turn.`;
     }
 
-    const removeCellEventListener = () => {
-        const cells = document.querySelectorAll('.cell');
-        cells.forEach(x => x.removeCellEventListener('click', putToken));
-    }
-
-    const toggleResetButton = () => {
-        resetButton.style.display = resetButton.style.display === 'block' 
-                                  ? 'none'
-                                  : 'block';
-    }
-
-    const putToken = (e) => {
+    const placeToken = (e) => {
         const rowIndex = e.target.dataset.row;
         const columnIndex = e.target.dataset.column;
 
@@ -271,9 +266,8 @@ function ScreenController() {
         updateBoard();
 
         if (message !== undefined) {
-            playerDiv.textContent = message;
-            removeCellEventListener();
-            toggleResetButton();
+            infoDiv.textContent = message;
+            containerDiv.removeEventListener('click', placeToken);
         }
     }
 
@@ -281,7 +275,30 @@ function ScreenController() {
         controller.reset();
         updateBoard();
     });
-    
+
+    namesButton.addEventListener('click', () => {
+        dialog.showModal();
+    });
+
+    cancelButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        dialog.close();
+    });
+
+    submitButton.addEventListener('click', (e) => {
+        if (player1Name.value.trim() === '' || player2Name.value.trim() === '') {
+            return;
+        }
+
+        controller.setPlayer1Name(player1Name.value);
+        controller.setPlayer2Name(player2Name.value);
+        controller.reset();
+        updateBoard();
+
+        e.preventDefault();
+        dialog.close();
+    });
+
     updateBoard();
 }
 

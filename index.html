@@ -8,11 +8,26 @@
 </head>
 <body>
     <main>
-        <p class="player"></p>
+        <p class="info"></p>
         <div class="container">
         </div>
-        <button class="reset">Reset</button>
+        <div class="buttons">
+            <button class="enter-names">Names</button>
+            <button class="reset">Reset</button>
+        </div>
     </main>
+    <dialog>
+        <form action="">
+            <label for="player1">Player 1:</label>
+            <input type="text" id="player1" placeholder="Player 1" required />
+            <label for="player2">Player 2:</label>
+            <input type="text" id="player2" placeholder="Player 2" required />
+            <div class="cancel-submit">
+                <button id="cancel">Cancel</button>
+                <button id="submit" type="submit">Submit</button>
+            </div>
+        </form>
+    </dialog>
     <script src="script.js"></script>
 </body>
 </html>
